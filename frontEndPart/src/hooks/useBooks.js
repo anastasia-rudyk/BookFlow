@@ -1,10 +1,9 @@
 import { useState, useEffect } from 'react';
 
-// Береться з .env — при деплої просто міняєш VITE_API_URL
 const API_URL = import.meta.env.VITE_API_URL || '/api/books';
 
 export function useBooks(userId) {
-  const [books, setBooks] = useState([]);
+  const [books, setBooks]     = useState([]);
   const [loading, setLoading] = useState(true);
 
   const fetchBooks = async () => {
@@ -28,26 +27,35 @@ export function useBooks(userId) {
   useEffect(() => { fetchBooks(); }, [userId]);
 
   const addBook = async (data) => {
-    await fetch(API_URL, {
-      method: 'POST',
+    if (!userId || userId === 'guest_mode') {
+      throw new Error('Потрібна авторизація для додавання книг');
+    }
+    const res = await fetch(API_URL, {
+      method:  'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ...data, userId }),
+      body:    JSON.stringify({ ...data, userId }),
     });
-    fetchBooks();
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || 'Помилка сервера при додаванні книги');
+    }
+    await fetchBooks();
   };
 
   const deleteBook = async (id) => {
-    await fetch(`${API_URL}/${id}`, { method: 'DELETE' });
-    fetchBooks();
+    const res = await fetch(`${API_URL}/${id}`, { method: 'DELETE' });
+    if (!res.ok) throw new Error('Помилка при видаленні книги');
+    await fetchBooks();
   };
 
   const updateBook = async (id, data) => {
-    await fetch(`${API_URL}/${id}`, {
-      method: 'PUT',
+    const res = await fetch(`${API_URL}/${id}`, {
+      method:  'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data),
+      body:    JSON.stringify(data),
     });
-    fetchBooks();
+    if (!res.ok) throw new Error('Помилка при оновленні книги');
+    await fetchBooks();
   };
 
   const stats = {

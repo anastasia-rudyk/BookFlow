@@ -7,30 +7,29 @@
 import React, { useState, useEffect, useRef } from 'react';
 
 const DEFAULT_FORM = {
-  title:       '',
-  author:      '',
-  pagesTotal:  '',
-  pagesRead:   '0',
-  rating:      '5',
-  genre:       'Художня',
-  mood:        'спокійна',
-  note:        '',
-  monthlyGoal: '300',
+  title:      '',
+  author:     '',
+  pagesTotal: '',
+  pagesRead:  '0',
+  rating:     '5',
+  genre:      'Художня',
+  mood:       'спокійна',
+  note:       '',
 };
 
 export default function AddBookModal({ book, onSave, onClose }) {
-  const [form,    setForm]    = useState(book ? {
-    title:       book.title       || '',
-    author:      book.author      || '',
-    pagesTotal:  book.pagesTotal  || '',
-    pagesRead:   book.pagesRead   || '0',
-    rating:      book.rating      || '5',
-    genre:       book.genre       || 'Художня',
-    mood:        book.mood        || 'спокійна',
-    note:        book.note        || '',
-    monthlyGoal: book.monthlyGoal || '300',
+  const [form, setForm] = useState(book ? {
+    title:      book.title      || '',
+    author:     book.author     || '',
+    pagesTotal: book.pagesTotal || '',
+    pagesRead:  book.pagesRead  || '0',
+    rating:     book.rating     || '5',
+    genre:      book.genre      || 'Художня',
+    mood:       book.mood       || 'спокійна',
+    note:       book.note       || '',
   } : DEFAULT_FORM);
   const [loading, setLoading] = useState(false);
+  const [error, setError]     = useState('');
   const firstInputRef = useRef(null);
 
   // ── Блокуємо скрол body при відкритті (Bug Fix) ──────────────
@@ -53,28 +52,26 @@ export default function AddBookModal({ book, onSave, onClose }) {
 
   async function handleSubmit(e) {
     e.preventDefault();
-    
     if (!form.title.trim() || !form.author.trim() || !form.pagesTotal) return;
-    
+
     setLoading(true);
-    
+    setError('');
+
     const dataToSave = {
       ...form,
-      pagesTotal:  Number(form.pagesTotal),
-      pagesRead:   Number(form.pagesRead) || 0,
-      rating:      Number(form.rating) || 5,
-      monthlyGoal: Number(form.monthlyGoal) || 0,
-      status:      Number(form.pagesRead) >= Number(form.pagesTotal) ? 'completed' : 'reading',
-      updatedAt:   new Date().toISOString()
+      pagesTotal: Number(form.pagesTotal),
+      pagesRead:  Number(form.pagesRead) || 0,
+      rating:     Number(form.rating) || 5,
+      status:     Number(form.pagesRead) >= Number(form.pagesTotal) ? 'completed' : 'reading',
+      updatedAt:  new Date().toISOString(),
     };
 
     try {
       await onSave(dataToSave);
-      onClose();
+      // onSave сам закриває модал — не викликаємо onClose тут
     } catch (err) {
-      console.error("Помилка при збереженні книги:", err);
-      alert("Не вдалося зберегти книгу. Перевірте з'єднання.");
-    } finally {
+      console.error('Помилка при збереженні книги:', err);
+      setError("Не вдалося зберегти книгу. Перевірте з'єднання.");
       setLoading(false);
     }
   }
@@ -160,19 +157,6 @@ export default function AddBookModal({ book, onSave, onClose }) {
               />
             </div>
             <div className="form-group">
-              <label htmlFor="monthlyGoal">Ціль сторінок / міс.</label>
-              <input
-                id="monthlyGoal"
-                type="number"
-                min="0"
-                value={form.monthlyGoal}
-                onChange={e => change('monthlyGoal', e.target.value)}
-              />
-            </div>
-          </div>
-
-          <div className="form-row">
-            <div className="form-group">
               <label htmlFor="genre">Жанр</label>
               <select id="genre" value={form.genre} onChange={e => change('genre', e.target.value)}>
                 {['Художня','Нонфікшн','Фентезі','Детектив','Саморозвиток','Навчальна'].map(g => (
@@ -180,14 +164,15 @@ export default function AddBookModal({ book, onSave, onClose }) {
                 ))}
               </select>
             </div>
-            <div className="form-group">
-              <label htmlFor="mood">Настрій книги</label>
-              <select id="mood" value={form.mood} onChange={e => change('mood', e.target.value)}>
-                {['спокійна','драйвова','глибока','надихаюча','темна'].map(m => (
-                  <option key={m}>{m}</option>
-                ))}
-              </select>
-            </div>
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="mood">Настрій книги</label>
+            <select id="mood" value={form.mood} onChange={e => change('mood', e.target.value)}>
+              {['спокійна','драйвова','глибока','надихаюча','темна'].map(m => (
+                <option key={m}>{m}</option>
+              ))}
+            </select>
           </div>
 
           <div className="form-group">
@@ -200,6 +185,12 @@ export default function AddBookModal({ book, onSave, onClose }) {
               onChange={e => change('note', e.target.value)}
             />
           </div>
+
+          {error && (
+            <div style={{ color: '#ef4444', fontSize: '0.9rem', marginBottom: '8px' }}>
+              {error}
+            </div>
+          )}
 
           <button className="btn-submit" type="submit" disabled={loading}>
             {loading
