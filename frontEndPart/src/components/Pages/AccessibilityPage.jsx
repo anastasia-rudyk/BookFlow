@@ -33,13 +33,13 @@ export default function AccessibilityPage() {
       <div className="accessibility-grid">
         <article className="access-card">
           <i className="fas fa-eye" aria-hidden="true" />
-          <h2>Для слабозорих і сліпих</h2>
+          <h2>Для людей з вадами зору</h2>
           <p>Підтримка скрінрідерів, видимий фокус, зрозумілі підписи, live‑повідомлення та керування з клавіатури.</p>
         </article>
 
         <article className="access-card">
           <i className="fas fa-ear-deaf" aria-hidden="true" />
-          <h2>Для глухих користувачів</h2>
+          <h2>Для людей з вадами слуху</h2>
           <p>Усі сповіщення дублюються текстом і візуально. Немає важливих аудіосигналів без текстової альтернативи.</p>
         </article>
 
