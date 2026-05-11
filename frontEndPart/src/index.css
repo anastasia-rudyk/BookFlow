@@ -84,3 +84,180 @@
 .theme-title i{color:var(--primary)}
 .high-contrast .theme-title{background:var(--bg-card);border-color:var(--border-strong)}
 @media (width<=700px){.theme-title{font-size:.94rem;padding:11px 12px}}
+
+/* ===== FIX 1: Аватар — обрізаний кут ===== */
+.avatar {
+  width: 46px;
+  height: 46px;
+  min-width: 46px;
+  border-radius: 50%;           /* було 18px — квадрат, тому обрізало */
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+  font-size: 1.1rem;
+  font-weight: 900;
+  color: white;
+  background: linear-gradient(135deg, var(--primary), var(--accent));
+  box-shadow: 0 8px 20px rgba(104, 87, 255, 0.28);
+  flex-shrink: 0;               /* не стискується в flex-контейнері */
+}
+
+/* ===== FIX 2: Сайдбар — інструменти не обрізаються, лінія рівна ===== */
+.sidebar {
+  padding-bottom: 32px;
+}
+
+/* ::before — декоративна рамка всередині сайдбара — вирівнюємо */
+.sidebar::before {
+  inset: 12px 10px;             /* було inset: 14px — виходила нерівно */
+  border-radius: 26px;
+}
+
+.sidebar-tools {
+  margin-top: 16px;
+  padding-bottom: 0;            /* скидаємо старий відступ знизу */
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.tool-btn {
+  width: 100%;
+  min-height: 52px;
+  white-space: nowrap;          /* текст «Доступність» / «Світла тема» не переносяться */
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ===== FIX 3: Статистика — цифри і підписи в картках ===== */
+.stats-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
+  margin-bottom: 28px;
+}
+
+.stat-box {
+  padding: 26px 24px;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-soft);
+  backdrop-filter: blur(18px);
+  transition: .25s;
+}
+
+.stat-box:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--shadow-hover);
+}
+
+.stat-box i {
+  font-size: 1.7rem;
+  color: var(--primary);
+  width: 54px;
+  height: 54px;
+  min-width: 54px;
+  display: grid;
+  place-items: center;
+  border-radius: 18px;
+  background: linear-gradient(135deg, rgba(104,87,255,.14), rgba(255,79,184,.10));
+  flex-shrink: 0;
+}
+
+.stat-box h2 {
+  margin: 0;
+  font-size: 2.2rem;
+  font-weight: 950;
+  letter-spacing: -.06em;
+  line-height: 1;
+  color: var(--text-dark);
+}
+
+.stat-box p {
+  margin: .25rem 0 0;
+  color: var(--text-light);
+  font-weight: 900;
+  font-size: .85rem;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+}
+
+/* Якщо статистика рендериться просто як текст без .stat-box — це баг у JSX */
+/* Тимчасовий фікс щоб хоч виглядало нормально: */
+.stats-container > *:not(.stat-box) {
+  display: none;
+}
+/* ===== Statistics Page ===== */
+.stats-page {
+  max-width: 900px;
+}
+
+.stats-header {
+  margin-bottom: 32px;
+}
+
+.stats-header h1 {
+  font-size: clamp(2.2rem, 5vw, 3.5rem);
+  margin: 6px 0 0;
+  letter-spacing: -.06em;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 20px;
+}
+
+.stat-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 28px 24px;
+  box-shadow: var(--shadow-soft);
+  backdrop-filter: blur(18px);
+  transition: .25s;
+  position: relative;
+  overflow: hidden;
+}
+
+.stat-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,.38), transparent 45%);
+  pointer-events: none;
+}
+
+.dark-theme .stat-card::before {
+  background: linear-gradient(135deg, rgba(255,255,255,.06), transparent 45%);
+}
+
+.stat-card:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--shadow-hover);
+  border-color: var(--border-strong);
+}
+
+.stat-value {
+  font-size: 3rem;
+  font-weight: 950;
+  letter-spacing: -.07em;
+  line-height: 1;
+  background: linear-gradient(135deg, var(--primary), var(--accent));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  margin-bottom: 10px;
+}
+
+.stat-label {
+  color: var(--text-light);
+  font-weight: 900;
+  font-size: .85rem;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+}
