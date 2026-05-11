@@ -16,11 +16,21 @@ export default function LibraryPage({
       book.title.toLowerCase().includes(q) || 
       book.author.toLowerCase().includes(q);
     
-    const matchesTab = activeTab === 'all' || book.status === activeTab;
+    // ЛОГІКА ВИЗНАЧЕННЯ АКТУАЛЬНОГО СТАТУСУ
+    // Якщо прочитано 0 — це завжди 'planned'
+    let currentStatus = book.status;
+    if (Number(book.pagesRead) === 0) {
+      currentStatus = 'planned';
+    }
+
+    const matchesTab = activeTab === 'all' || currentStatus === activeTab;
     return matchesSearch && matchesTab;
   });
 
-  const translateStatus = (status) => {
+  const translateStatus = (status, pagesRead = null) => {
+    // Якщо ми передаємо кількість сторінок, перевіряємо на "0" для відображення
+    if (pagesRead !== null && Number(pagesRead) === 0) return 'В планах';
+    
     switch(status) {
       case 'reading': return 'Читаю';
       case 'completed': return 'Завершено';
@@ -46,7 +56,7 @@ export default function LibraryPage({
 
     let newStatus = 'reading';
     if (parsed === 0) newStatus = 'planned';
-    if (parsed >= book.pagesTotal) newStatus = 'completed';
+    if (parsed >= book.pagesTotal && book.pagesTotal > 0) newStatus = 'completed';
 
     updateBook(book.id, { pagesRead: parsed, status: newStatus });
   };
@@ -114,13 +124,16 @@ export default function LibraryPage({
         ) : (
           filteredBooks.map(book => {
             const percent = Math.round((book.pagesRead / book.pagesTotal) * 100) || 0;
+            // Визначаємо клас для бейджика статусу
+            const displayStatusClass = Number(book.pagesRead) === 0 ? 'planned' : book.status;
+
             return (
               <article key={book.id} className="book-card animate-fade-in">
                 <div className="book-card-cover">
                   <div className="cover-monogram">{book.title.charAt(0)}</div>
                   <div className="card-actions">
-                    <span className={`card-status ${book.status}`}>
-                      {translateStatus(book.status)}
+                    <span className={`card-status ${displayStatusClass}`}>
+                      {translateStatus(book.status, book.pagesRead)}
                     </span>
                     <button className="icon-btn delete-btn" onClick={() => handleDelete(book.id)}>
                       <i className="fas fa-trash"></i>
