@@ -1,0 +1,55 @@
+services:
+  # ── Бекенд (Express + Firebase) ──────────────────────────────────
+  - type: web
+    name: bookflow-server
+    runtime: node
+    rootDir: server/server
+    buildCommand: npm install
+    startCommand: node index.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 5000
+      - key: FIREBASE_API_KEY
+        value: AIzaSyAMmL_Ox1gDt5mC_om8G44hCH8Rwq2SmVA
+      - key: FIREBASE_AUTH_DOMAIN
+        value: reading-dairy.firebaseapp.com
+      - key: FIREBASE_PROJECT_ID
+        value: reading-dairy
+      - key: FIREBASE_STORAGE_BUCKET
+        value: reading-dairy.firebasestorage.app
+      - key: FIREBASE_MESSAGING_SENDER_ID
+        value: "392334952892"
+      - key: FIREBASE_APP_ID
+        value: "1:392334952892:web:4c273b1ee58f8ffb68c3b9"
+      # Замінити на реальну URL фронтенду після першого деплою
+      - key: CLIENT_ORIGIN
+        value: https://bookflow-frontend.onrender.com
+ 
+  # ── Фронтенд (React + Vite) ──────────────────────────────────────
+  - type: static
+    name: bookflow-frontend
+    rootDir: frontEndPart
+    buildCommand: npm install && npm run build
+    staticPublishPath: dist
+    envVars:
+      - key: VITE_FIREBASE_API_KEY
+        value: AIzaSyAMmL_Ox1gDt5mC_om8G44hCH8Rwq2SmVA
+      - key: VITE_FIREBASE_AUTH_DOMAIN
+        value: reading-dairy.firebaseapp.com
+      - key: VITE_FIREBASE_PROJECT_ID
+        value: reading-dairy
+      - key: VITE_FIREBASE_STORAGE_BUCKET
+        value: reading-dairy.firebasestorage.app
+      - key: VITE_FIREBASE_MESSAGING_SENDER_ID
+        value: "392334952892"
+      - key: VITE_FIREBASE_APP_ID
+        value: "1:392334952892:web:4c273b1ee58f8ffb68c3b9"
+      # Замінити на реальну URL бекенду після першого деплою
+      - key: VITE_API_URL
+        value: https://bookflow-server.onrender.com/api/books
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
