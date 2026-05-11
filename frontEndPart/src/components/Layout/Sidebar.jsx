@@ -35,13 +35,7 @@ export default function Sidebar({ onAddBook }) { // Додаємо пропс д
               <h2>BookFlow</h2>
               <p>Accessible Reading Tracker</p>
             </div>
-          </div>
-
-          {/* Кнопка швидкої дії */}
-          <button className="add-book-sidebar-btn" onClick={onAddBook}>
-            <i className="fas fa-plus"></i>
-            <span>Додати книгу</span>
-          </button>
+          </div>          
 
           <nav className="nav-menu">
             {NAV_ITEMS.map((item) => (
