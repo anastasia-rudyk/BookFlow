@@ -10,8 +10,8 @@ const NAV_ITEMS = [
   { id: 'accessibility', icon: 'fa-universal-access',    label: 'Доступність' },
 ];
 
-export default function Sidebar() {
-  const { user, route, setRoute, darkMode, setDarkMode, logout, sidebarOpen, setSidebarOpen } = useApp();
+export default function Sidebar({ onAddBook }) { // Додаємо пропс для відкриття модалки
+  const { route, setRoute, darkMode, setDarkMode, logout, sidebarOpen, setSidebarOpen } = useApp();
 
   function navigate(id) {
     setRoute(id);
@@ -20,13 +20,15 @@ export default function Sidebar() {
 
   return (
     <>
+      {/* Затемнення для мобілки */}
       <div
         className={`sidebar-backdrop ${sidebarOpen ? 'open' : ''}`}
         onClick={() => setSidebarOpen(false)}
         aria-hidden="true"
       />
+
       <aside className={`sidebar ${sidebarOpen ? 'open' : ''}`} id="sidebar">
-        <div>
+        <div className="sidebar-top-content">
           <div className="sidebar-logo">
             <div className="logo-icon"><i className="fas fa-book-open"></i></div>
             <div>
@@ -34,6 +36,12 @@ export default function Sidebar() {
               <p>Accessible Reading Tracker</p>
             </div>
           </div>
+
+          {/* Кнопка швидкої дії */}
+          <button className="add-book-sidebar-btn" onClick={onAddBook}>
+            <i className="fas fa-plus"></i>
+            <span>Додати книгу</span>
+          </button>
 
           <nav className="nav-menu">
             {NAV_ITEMS.map((item) => (
@@ -50,23 +58,28 @@ export default function Sidebar() {
           </nav>
         </div>
 
-        <div className="sidebar-tools">
-  {/* ПЕРЕМИКАЧ ТЕМИ (Theme Toggle) */}
-  <button 
-    className="tool-btn theme-toggle" 
-    onClick={() => setDarkMode(!darkMode)}
-    title={darkMode ? "Увімкнути світлу тему" : "Увімкнути темну тему"}
-  >
-    <i className={`fas ${darkMode ? 'fa-sun' : 'fa-moon'}`}></i>
-    <span>{darkMode ? 'Світла тема' : 'Темна тема'}</span>
-  </button>
+        {/* Низ сайдбару */}
+        <div className="sidebar-bottom">
+          <div className="theme-switch-wrapper" aria-label="Перемикач теми">
+            <i className="fas fa-sun" aria-hidden="true" />
+            <label className="theme-switch">
+              <span className="visually-hidden">Темна тема</span>
+              <input 
+                type="checkbox" 
+                id="theme-toggle"
+                checked={darkMode}
+                onChange={() => setDarkMode(!darkMode)}
+              />
+              <span className="slider" aria-hidden="true" />
+            </label>
+            <i className="fas fa-moon" aria-hidden="true" />
+          </div>
 
-  {/* КНОПКА ВИХОДУ */}
-  <button className="logout-btn" onClick={logout}>
-    <i className="fas fa-right-from-bracket" /> 
-    <span>Вийти</span>
-  </button>
-</div>
+          <button className="logout-btn" type="button" onClick={logout}>
+            <i className="fas fa-right-from-bracket" aria-hidden="true" /> 
+            <span>Вийти</span>
+          </button>
+        </div>
       </aside>
     </>
   );
