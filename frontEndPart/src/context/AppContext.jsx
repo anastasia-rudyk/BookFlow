@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { auth, onAuthStateChanged, signOut } from '../../../server/firebase';
+import { auth, onAuthStateChanged, signOut } from '../firebase';
 
 const AppContext = createContext();
 
@@ -11,7 +11,6 @@ export function AppProvider({ children }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [toast, setToast] = useState(null);
 
-  // 1. Відслідковування авторизації
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
@@ -20,7 +19,6 @@ export function AppProvider({ children }) {
     return () => unsubscribe();
   }, []);
 
-  // 2. Логіка темної теми (як було у твоєму script.js)
   useEffect(() => {
     if (darkMode) {
       document.body.classList.add('dark-theme');
@@ -29,18 +27,16 @@ export function AppProvider({ children }) {
     }
   }, [darkMode]);
 
-  // 3. Логіка тост-повідомлень
   const showToast = (message) => {
     setToast(message);
-    setTimeout(() => setToast(null), 3000); // Зникає через 3 секунди
+    setTimeout(() => setToast(null), 3000);
   };
 
-  // 4. Логіка виходу з акаунту
   const logout = async () => {
     try {
       await signOut(auth);
     } catch (error) {
-      console.error("Помилка при виході:", error);
+      console.error('Помилка при виході:', error);
     }
   };
 
@@ -55,7 +51,7 @@ export function AppProvider({ children }) {
     setSidebarOpen,
     toast,
     showToast,
-    logout
+    logout,
   };
 
   return (

@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { 
-  auth, 
-  signInWithEmailAndPassword, 
-  createUserWithEmailAndPassword 
-} from '../../../../server/firebase';
+import {
+  auth,
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+} from '../../firebase';
 
 export default function AuthScreen() {
   const [isLogin, setIsLogin] = useState(true);
@@ -16,7 +16,6 @@ export default function AuthScreen() {
     e.preventDefault();
     setError('');
 
-    // Мінімальна валідація, щоб Firebase не видавав помилку
     if (password.length < 6) {
       setError('Пароль має містити щонайменше 6 символів');
       return;
@@ -26,18 +25,19 @@ export default function AuthScreen() {
 
     try {
       if (isLogin) {
-        // Вхід існуючого користувача
         await signInWithEmailAndPassword(auth, email, password);
       } else {
-        // Реєстрація нового користувача
         await createUserWithEmailAndPassword(auth, email, password);
       }
     } catch (err) {
-      console.error("Помилка авторизації:", err);
-      // Робимо помилки Firebase зрозумілими для користувача
+      console.error('Помилка авторизації:', err);
       if (err.code === 'auth/email-already-in-use') {
         setError('Цей Email вже зареєстровано. Спробуйте увійти.');
-      } else if (err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password' || err.code === 'auth/invalid-credential') {
+      } else if (
+        err.code === 'auth/user-not-found' ||
+        err.code === 'auth/wrong-password' ||
+        err.code === 'auth/invalid-credential'
+      ) {
         setError('Неправильний Email або пароль.');
       } else {
         setError('Сталася помилка. Перевірте дані.');
@@ -61,41 +61,51 @@ export default function AuthScreen() {
         <form onSubmit={handleSubmit} className="auth-form">
           <div className="form-group">
             <label htmlFor="email">Email</label>
-            <input 
+            <input
               id="email"
-              type="email" 
-              placeholder="ваша@пошта.com" 
-              value={email} 
-              onChange={(e) => setEmail(e.target.value)} 
-              required 
+              type="email"
+              placeholder="ваша@пошта.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
             />
           </div>
 
           <div className="form-group">
             <label htmlFor="password">Пароль</label>
-            <input 
+            <input
               id="password"
-              type="password" 
-              placeholder="Мін. 6 символів" 
-              value={password} 
-              onChange={(e) => setPassword(e.target.value)} 
-              required 
+              type="password"
+              placeholder="Мін. 6 символів"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
             />
           </div>
 
-          {error && <div className="auth-error" style={{ color: '#ef4444', fontSize: '0.9rem', marginBottom: '10px' }}>{error}</div>}
+          {error && (
+            <div className="auth-error" style={{ color: '#ef4444', fontSize: '0.9rem', marginBottom: '10px' }}>
+              {error}
+            </div>
+          )}
 
           <button type="submit" className="btn-primary auth-submit" disabled={loading} style={{ width: '100%' }}>
-            {loading ? <i className="fas fa-spinner fa-spin"></i> : (isLogin ? 'Увійти' : 'Зареєструватися')}
+            {loading ? (
+              <i className="fas fa-spinner fa-spin"></i>
+            ) : isLogin ? (
+              'Увійти'
+            ) : (
+              'Зареєструватися'
+            )}
           </button>
         </form>
 
         <div className="auth-footer" style={{ marginTop: '20px', textAlign: 'center', fontSize: '0.9rem' }}>
           <p>
             {isLogin ? 'Ще немає акаунту? ' : 'Вже маєте акаунт? '}
-            <button 
-              type="button" 
-              className="btn-text" 
+            <button
+              type="button"
+              className="btn-text"
               onClick={() => { setIsLogin(!isLogin); setError(''); }}
               style={{ background: 'none', border: 'none', color: 'var(--primary)', cursor: 'pointer', fontWeight: 'bold' }}
             >
