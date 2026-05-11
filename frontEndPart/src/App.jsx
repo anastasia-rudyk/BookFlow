@@ -21,6 +21,7 @@ function InnerApp() {
     user,
     authLoading,
     route,
+    setRoute,
     toast,
     showToast,
     sidebarOpen,
@@ -53,6 +54,12 @@ function InnerApp() {
     }
   };
 
+  // Функція для повернення з екрана авторизації
+  const handleBackToLibrary = () => {
+    setForceAuth(false);
+    setRoute('library');
+  };
+
   // 1. Екран завантаження авторизації
   if (authLoading) {
     return (
@@ -62,25 +69,22 @@ function InnerApp() {
     );
   }
 
-  // 2. Екран примусової авторизації
-  if (forceAuth && !user) {
-    return (
-      <div className="auth-force-wrapper">
-        <button
-          className="btn-ghost"
-          onClick={() => setForceAuth(false)}
-          style={{ position: 'fixed', top: '24px', left: '24px', zIndex: 3000 }}
-        >
-          <i className="fas fa-arrow-left"></i> Назад до бібліотеки
-        </button>
-        <AuthScreen />
-      </div>
-    );
-  }
-
+if ((forceAuth && !user) || (route === 'auth' && !user)) {
+  return (
+    <div className="auth-force-wrapper">
+      <button
+        className="back-button-auth"
+        onClick={handleBackToLibrary}
+      >
+        <i className="fas fa-arrow-left"></i>
+        <span>Назад до бібліотеки</span>
+      </button>
+      <AuthScreen />
+    </div>
+  );
+}
   // 3. Роутинг сторінок
   const renderPage = () => {
-    // Передаємо stats та books у всі компоненти, де вони потрібні
     const commonProps = { books, stats, updateBook, deleteBook };
     
     switch (route) {
@@ -115,19 +119,19 @@ function InnerApp() {
 
   return (
     <>
+      {/* Декоративні елементи фону */}
       <div className="background-blur blur-1" aria-hidden="true"></div>
       <div className="background-blur blur-2" aria-hidden="true"></div>
       <div className="background-blur blur-3" aria-hidden="true"></div>
       <div className="grain-layer" aria-hidden="true"></div>
 
       <div className={`app-shell ${sidebarOpen ? 'sidebar-open' : ''}`}>
-        {/* Sidebar тепер отримує все необхідне для перемикання теми */}
         <Sidebar onAddBook={handleAddButtonClick} />
 
         <main className="workspace" id="main-content" tabIndex="-1">
           <TopBar
             searchQuery={searchQuery}
-            onSearch={setSearchQuery} // Це оживляє твій інпут пошуку
+            onSearch={setSearchQuery}
             sidebarOpen={sidebarOpen}
             setSidebarOpen={setSidebarOpen}
           />
@@ -150,7 +154,6 @@ function InnerApp() {
           onClose={() => setShowAddModal(false)}
           onSave={async (data) => {
             try {
-              // Додаємо в базу
               await addBook(data);
               showToast('Книгу додано ✓');
               setShowAddModal(false);
