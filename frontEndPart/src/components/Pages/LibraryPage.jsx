@@ -8,10 +8,8 @@ export default function LibraryPage({
   searchQuery, 
   onAddBook 
 }) {
-  // Стан для вкладок (з твого script.js: state.filter)
   const [activeTab, setActiveTab] = useState('all');
 
-  // Фільтрація книг за вкладкою та пошуком (як у твоєму коді)
   const filteredBooks = books.filter(book => {
     const q = (searchQuery || '').toLowerCase();
     const matchesSearch = 
@@ -19,11 +17,9 @@ export default function LibraryPage({
       book.author.toLowerCase().includes(q);
     
     const matchesTab = activeTab === 'all' || book.status === activeTab;
-    
     return matchesSearch && matchesTab;
   });
 
-  // Логіка перекладу статусу (як у твоїй функції translateStatus)
   const translateStatus = (status) => {
     switch(status) {
       case 'reading': return 'Читаю';
@@ -33,40 +29,36 @@ export default function LibraryPage({
     }
   };
 
-  // Функція оновлення прогресу через prompt (як у твоєму script.js: window.editPages)
   const handleEditPages = (book) => {
     const value = prompt('Скільки сторінок прочитано?', book.pagesRead);
     if (value === null) return;
 
     const parsed = parseInt(value);
-    if (isNaN(parsed)) {
-      alert('Введіть число');
+    if (isNaN(parsed) || parsed < 0) {
+      alert('Введіть коректне число');
       return;
     }
 
     if (parsed > book.pagesTotal) {
-      alert('Забагато сторінок');
+      alert('Число прочитаних сторінок не може бути більшим за загальну кількість');
       return;
     }
 
-    // Розрахунок нового статусу (як у твоїй функції calculateStatus)
     let newStatus = 'reading';
-    if (parsed <= 0) newStatus = 'planned';
+    if (parsed === 0) newStatus = 'planned';
     if (parsed >= book.pagesTotal) newStatus = 'completed';
 
     updateBook(book.id, { pagesRead: parsed, status: newStatus });
   };
 
-  // Видалення з підтвердженням (як у твоєму script.js: window.deleteBook)
   const handleDelete = (id) => {
-    if (window.confirm('Видалити книгу?')) {
+    if (window.confirm('Видалити книгу з вашої бібліотеки?')) {
       deleteBook(id);
     }
   };
 
   return (
     <div className="library-page">
-      {/* Hero-блок з твого index.html */}
       <section className="hero-card">
         <div className="hero-copy">
           <p className="eyebrow"><span></span> Твій простір для читання</p>
@@ -76,24 +68,10 @@ export default function LibraryPage({
             <button className="btn-primary" onClick={onAddBook}>
               <i className="fas fa-plus"></i> Нова книга
             </button>
-            <button className="btn-ghost" onClick={() => document.getElementById('book-grid').scrollIntoView({behavior: 'smooth'})}>
-              <i className="fas fa-list"></i> Список книг
-            </button>
-          </div>
-        </div>
-        <div className="hero-visual">
-          <div className="floating-book book-a"><span></span><span></span><span></span></div>
-          <div className="floating-book book-b"><span></span><span></span><span></span></div>
-          <div className="orbital-ring"></div>
-          <div className="hero-badge">
-            <i className="fas fa-wand-magic-sparkles"></i>
-            <strong>AI-порада</strong>
-            <small>розумний темп читання</small>
           </div>
         </div>
       </section>
 
-      {/* Міні-статистика з твого index.html */}
       <div className="quick-stats">
         <article className="mini-stat">
           <i className="fas fa-book-open-reader"></i>
@@ -107,12 +85,11 @@ export default function LibraryPage({
         </article>
         <article className="mini-stat">
           <i className="fas fa-bullseye"></i>
-          <span>{books.length > 0 ? Math.round((stats.completed / books.length) * 100) : 0}%</span>
+          <span>{books.length > 0 ? Math.round(((stats?.completed || 0) / books.length) * 100) : 0}%</span>
           <small>загальний прогрес</small>
         </article>
       </div>
 
-      {/* Панель фільтрів (Toolbar) */}
       <div className="toolbar-row">
         <div className="filter-bar">
           {['all', 'reading', 'completed', 'planned'].map(filter => (
@@ -127,18 +104,16 @@ export default function LibraryPage({
         </div>
       </div>
 
-      {/* Сітка книг (Book Grid) */}
       <div className="book-grid" id="book-grid">
         {filteredBooks.length === 0 ? (
           <div className="empty-state">
             <i className="fas fa-book-open"></i>
             <h2>Тут поки пусто</h2>
-            <p>Додай першу книгу ✨</p>
+            <p>Додайте вашу першу книгу, щоб почати відстеження.</p>
           </div>
         ) : (
           filteredBooks.map(book => {
             const percent = Math.round((book.pagesRead / book.pagesTotal) * 100) || 0;
-            
             return (
               <article key={book.id} className="book-card animate-fade-in">
                 <div className="book-card-cover">
@@ -156,29 +131,17 @@ export default function LibraryPage({
                 <div className="book-card-body">
                   <h3>{book.title}</h3>
                   <p className="author">{book.author}</p>
-
                   <div className="progress-info">
                     <span>Прогрес</span>
                     <span>{percent}%</span>
                   </div>
-
                   <div className="progress-track">
                     <div className="progress-fill" style={{ width: `${percent}%` }}></div>
                   </div>
-
-                  <p className="pages-text">
-                    {book.pagesRead} / {book.pagesTotal} стор.
-                  </p>
-
+                  <p className="pages-text">{book.pagesRead} / {book.pagesTotal} стор.</p>
                   <div className="card-bottom">
                     <div className="rating">⭐ {book.rating}/5</div>
-                    <button 
-                      className="btn-primary" 
-                      style={{ width: 'auto', padding: '10px 16px' }}
-                      onClick={() => handleEditPages(book)}
-                    >
-                      Оновити
-                    </button>
+                    <button className="btn-primary" onClick={() => handleEditPages(book)}>Оновити</button>
                   </div>
                 </div>
               </article>

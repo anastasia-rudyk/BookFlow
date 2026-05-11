@@ -2,11 +2,13 @@ import React, { useState } from 'react';
 import { AppProvider, useApp } from './context/AppContext';
 import { useBooks } from './hooks/useBooks';
 
+// Layout
 import Sidebar from './components/Layout/Sidebar';
 import TopBar from './components/Layout/TopBar';
 import AuthScreen from './components/Auth/AuthScreen';
 import AddBookModal from './components/Books/AddBookModal';
 
+// Pages
 import LibraryPage from './components/Pages/LibraryPage';
 import StatsPage from './components/Pages/StatsPage';
 import FocusPage from './components/Pages/FocusPage';
@@ -25,8 +27,10 @@ function InnerApp() {
     setSidebarOpen,
   } = useApp();
 
-  const currentUser = user || { uid: 'guest_mode', displayName: 'Гість' };
+  // Визначаємо UID: якщо юзер не залогінений, використовуємо 'guest_mode'
+  const currentUserUid = user ? user.uid : 'guest_mode';
 
+  // Отримуємо дані та методи з нашого хука
   const {
     books,
     loading: booksLoading,
@@ -34,20 +38,23 @@ function InnerApp() {
     addBook,
     updateBook,
     deleteBook,
-  } = useBooks(currentUser.uid);
+  } = useBooks(currentUserUid);
 
-  const [searchQuery,  setSearchQuery]  = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
   const [showAddModal, setShowAddModal] = useState(false);
-  const [forceAuth,    setForceAuth]    = useState(false);
+  const [forceAuth, setForceAuth] = useState(false);
 
+  // Обробка натискання на "Додати книгу"
   const handleAddButtonClick = () => {
     if (!user) {
+      // Якщо це гість — пропонуємо залогінитись
       setForceAuth(true);
     } else {
       setShowAddModal(true);
     }
   };
 
+  // 1. Екран завантаження авторизації
   if (authLoading) {
     return (
       <div className="loading-center" style={{ display: 'grid', placeItems: 'center', height: '100vh' }}>
@@ -56,6 +63,7 @@ function InnerApp() {
     );
   }
 
+  // 2. Екран примусової авторизації
   if (forceAuth && !user) {
     return (
       <div className="auth-force-wrapper">
@@ -71,11 +79,19 @@ function InnerApp() {
     );
   }
 
+  // 3. Роутинг сторінок
   const renderPage = () => {
     const commonProps = { books, stats, updateBook, deleteBook };
+    
     switch (route) {
       case 'library':
-        return <LibraryPage {...commonProps} searchQuery={searchQuery} onAddBook={handleAddButtonClick} />;
+        return (
+          <LibraryPage 
+            {...commonProps} 
+            searchQuery={searchQuery} 
+            onAddBook={handleAddButtonClick} 
+          />
+        );
       case 'stats':
         return <StatsPage {...commonProps} />;
       case 'focus':
@@ -87,12 +103,19 @@ function InnerApp() {
       case 'accessibility':
         return <AccessibilityPage />;
       default:
-        return <LibraryPage {...commonProps} searchQuery={searchQuery} onAddBook={handleAddButtonClick} />;
+        return (
+          <LibraryPage 
+            {...commonProps} 
+            searchQuery={searchQuery} 
+            onAddBook={handleAddButtonClick} 
+          />
+        );
     }
   };
 
   return (
     <>
+      {/* Декоративні елементи фону */}
       <div className="background-blur blur-1" aria-hidden="true"></div>
       <div className="background-blur blur-2" aria-hidden="true"></div>
       <div className="background-blur blur-3" aria-hidden="true"></div>
@@ -108,10 +131,13 @@ function InnerApp() {
             sidebarOpen={sidebarOpen}
             setSidebarOpen={setSidebarOpen}
           />
+          
           <div className="content-area">
+            {/* Показуємо лоадер тільки якщо юзер залогінений і дані вантажаться */}
             {booksLoading && user ? (
               <div style={{ textAlign: 'center', padding: '100px' }}>
                 <i className="fas fa-spinner fa-spin fa-2x" style={{ color: 'var(--primary)' }}></i>
+                <p style={{ marginTop: '15px', opacity: 0.7 }}>Завантаження вашої бібліотеки...</p>
               </div>
             ) : (
               renderPage()
@@ -120,17 +146,23 @@ function InnerApp() {
         </main>
       </div>
 
+      {/* Модалка додавання книги */}
       {showAddModal && (
         <AddBookModal
           onClose={() => setShowAddModal(false)}
           onSave={async (data) => {
-            await addBook(data);
-            showToast('Книгу додано ✓');
-            setShowAddModal(false);
+            try {
+              await addBook(data);
+              showToast('Книгу додано ✓');
+              setShowAddModal(false);
+            } catch (err) {
+              showToast('Помилка при додаванні');
+            }
           }}
         />
       )}
 
+      {/* Система сповіщень (Toast) */}
       <div id="toast" className={toast ? 'show' : ''}>
         {toast}
       </div>
