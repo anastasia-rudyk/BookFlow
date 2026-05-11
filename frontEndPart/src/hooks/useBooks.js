@@ -1,14 +1,14 @@
 import { useState, useEffect } from 'react';
-import { db } from '../firebase'; // Імпортуємо твій конфиг
+import { db } from '../firebase'; // Переконайся, що шлях правильний
 import { 
   collection, 
   query, 
   where, 
   onSnapshot, 
   addDoc, 
-  updateDoc, 
   deleteDoc, 
   doc, 
+  updateDoc, 
   serverTimestamp 
 } from 'firebase/firestore';
 
@@ -16,89 +16,54 @@ export function useBooks(userId) {
   const [books, setBooks] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // 1. Отримання даних в реальному часі
   useEffect(() => {
-    // Якщо юзер не залогінився — нічого не вантажимо
     if (!userId || userId === 'guest_mode') {
       setBooks([]);
       setLoading(false);
       return;
     }
 
-    setLoading(true);
-
-    // Створюємо запит: колекція 'books', де userId збігається
-    const q = query(
-      collection(db, 'books'),
-      where('userId', '==', userId)
-    );
-
-    // onSnapshot сам оновлює стейт, коли щось змінюється в базі
+    // Слухаємо базу даних в реальному часі
+    const q = query(collection(db, 'books'), where('userId', '==', userId));
+    
     const unsubscribe = onSnapshot(q, (snapshot) => {
-      const data = snapshot.docs.map(d => ({
-        id: d.id,
-        ...d.data()
+      const booksData = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
       }));
-      setBooks(data);
+      setBooks(booksData);
       setLoading(false);
     }, (error) => {
-      console.error("Помилка Firestore:", error);
+      console.error("Firebase error:", error);
       setLoading(false);
     });
 
-    return () => unsubscribe(); // Відписуємось при виході
+    return () => unsubscribe();
   }, [userId]);
 
-  // 2. Додавання книги
   const addBook = async (data) => {
-    if (!userId || userId === 'guest_mode') {
-      throw new Error('Потрібна авторизація');
-    }
-    
-    try {
-      await addDoc(collection(db, 'books'), {
-        ...data,
-        userId,
-        createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp()
-      });
-    } catch (e) {
-      console.error("Error adding doc:", e);
-      throw e;
-    }
+    if (!userId || userId === 'guest_mode') return;
+    // Додаємо документ прямо в Firebase
+    await addDoc(collection(db, 'books'), {
+      ...data,
+      userId,
+      createdAt: serverTimestamp()
+    });
   };
 
-  // 3. Видалення книги
   const deleteBook = async (id) => {
-    try {
-      await deleteDoc(doc(db, 'books', id));
-    } catch (e) {
-      console.error("Error deleting doc:", e);
-    }
+    await deleteDoc(doc(db, 'books', id));
   };
 
-  // 4. Оновлення книги
   const updateBook = async (id, data) => {
-    try {
-      const bookRef = doc(db, 'books', id);
-      await updateDoc(bookRef, {
-        ...data,
-        updatedAt: serverTimestamp()
-      });
-    } catch (e) {
-      console.error("Error updating doc:", e);
-    }
+    const bookRef = doc(db, 'books', id);
+    await updateDoc(bookRef, data);
   };
 
-  // 5. Статистика (залишаємо як була)
   const stats = {
-    total: books.length,
     reading: books.filter(b => b.status === 'reading').length,
     completed: books.filter(b => b.status === 'completed').length,
-    pages: books.reduce((acc, b) => acc + (Number(b.pagesRead) || 0), 0),
-    avgRating: books.length > 0
-      ? (books.reduce((acc, b) => acc + (Number(b.rating) || 0), 0) / books.length).toFixed(1)
-      : 0,
+    planned: books.filter(b => b.status === 'planned').length
   };
 
   return { books, loading, stats, addBook, deleteBook, updateBook };
