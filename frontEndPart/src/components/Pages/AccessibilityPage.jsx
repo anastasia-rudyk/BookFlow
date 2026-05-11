@@ -9,7 +9,6 @@ export default function AccessibilityPage() {
     highContrast: false,
     largeText:    false,
     lessMotion:   false,
-    autoSpeak:    false,
   });
 
   function toggle(key) {
@@ -50,7 +49,6 @@ export default function AccessibilityPage() {
             { key: 'highContrast', label: 'Високий контраст' },
             { key: 'largeText',    label: 'Збільшений текст' },
             { key: 'lessMotion',   label: 'Менше анімацій' },
-            { key: 'autoSpeak',    label: 'Автоозвучка повідомлень' },
           ].map(({ key, label }) => (
             <label key={key} className="check-row">
               <input

@@ -86,7 +86,7 @@ export default function FocusPage({ books, updateBook }) {
           Фокус-читання
         </h1>
         <p className="subtitle" style={{ color: 'var(--text2)', fontSize: '0.9rem', marginTop: 6 }}>
-          Запускай читальні сесії, зараховуй сторінки й отримуй досягнення.
+          Запускай читальні сесії та зараховуй прочитані сторінки без зайвих елементів.
         </p>
       </div>
 
@@ -163,7 +163,7 @@ export default function FocusPage({ books, updateBook }) {
             <p>усього у фокусі</p>
           </article>
           <article className="focus-mini-card">
-            <i className="fas fa-trophy" aria-hidden="true" />
+            <i className="fas fa-list-check" aria-hidden="true" />
             <h2>{sessionsTotal}</h2>
             <p>завершених сесій</p>
           </article>

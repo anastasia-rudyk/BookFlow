@@ -57,23 +57,11 @@ export default function Sidebar() {
           </nav>
         </div>
 
-        {/* Точний список нижніх кнопок з твого index.html */}
-        <div className="sidebar-tools" aria-label="Швидкі дії">
-          <button className="tool-btn" id="random-btn" type="button" onClick={() => navigate('discover')}>
-            <i className="fas fa-wand-magic-sparkles" aria-hidden="true" /> Що почитати?
-          </button>
-          
-          <button className="tool-btn" id="read-page-btn" type="button">
-            <i className="fas fa-volume-high" aria-hidden="true" /> Озвучити сторінку
-          </button>
-          
-          <button className="tool-btn" id="open-command-btn" type="button">
-            <i className="fas fa-command" aria-hidden="true" /> Командний центр
-          </button>
-          
-          <button className="tool-btn" id="focus-shortcut-btn" type="button" onClick={() => navigate('focus')}>
-            <i className="fas fa-stopwatch" aria-hidden="true" /> Фокус-сесія
-          </button>
+        <div className="sidebar-tools" aria-label="Налаштування сайту">
+          <div className="theme-title">
+            <i className="fas fa-palette" aria-hidden="true" />
+            <span>Змінити тему</span>
+          </div>
 
           <div className="theme-switch-wrapper" aria-label="Перемикач теми">
             <i className="fas fa-sun" aria-hidden="true" />
