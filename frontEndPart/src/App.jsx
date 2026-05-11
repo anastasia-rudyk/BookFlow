@@ -30,7 +30,7 @@ function InnerApp() {
   // Визначаємо UID: якщо юзер не залогінений, використовуємо 'guest_mode'
   const currentUserUid = user ? user.uid : 'guest_mode';
 
-  // Отримуємо дані та методи з нашого хука
+  // Отримуємо дані та методи з нашого хука (вже з Firestore)
   const {
     books,
     loading: booksLoading,
@@ -47,7 +47,6 @@ function InnerApp() {
   // Обробка натискання на "Додати книгу"
   const handleAddButtonClick = () => {
     if (!user) {
-      // Якщо це гість — пропонуємо залогінитись
       setForceAuth(true);
     } else {
       setShowAddModal(true);
@@ -81,6 +80,7 @@ function InnerApp() {
 
   // 3. Роутинг сторінок
   const renderPage = () => {
+    // Передаємо stats та books у всі компоненти, де вони потрібні
     const commonProps = { books, stats, updateBook, deleteBook };
     
     switch (route) {
@@ -93,13 +93,13 @@ function InnerApp() {
           />
         );
       case 'stats':
-        return <StatsPage {...commonProps} />;
+        return <StatsPage books={books} stats={stats} />;
       case 'focus':
-        return <FocusPage {...commonProps} />;
+        return <FocusPage books={books} stats={stats} />;
       case 'assistant':
-        return <AssistantPage {...commonProps} />;
+        return <AssistantPage books={books} stats={stats} />;
       case 'discover':
-        return <DiscoverPage {...commonProps} />;
+        return <DiscoverPage books={books} stats={stats} />;
       case 'accessibility':
         return <AccessibilityPage />;
       default:
@@ -115,25 +115,24 @@ function InnerApp() {
 
   return (
     <>
-      {/* Декоративні елементи фону */}
       <div className="background-blur blur-1" aria-hidden="true"></div>
       <div className="background-blur blur-2" aria-hidden="true"></div>
       <div className="background-blur blur-3" aria-hidden="true"></div>
       <div className="grain-layer" aria-hidden="true"></div>
 
       <div className={`app-shell ${sidebarOpen ? 'sidebar-open' : ''}`}>
+        {/* Sidebar тепер отримує все необхідне для перемикання теми */}
         <Sidebar onAddBook={handleAddButtonClick} />
 
         <main className="workspace" id="main-content" tabIndex="-1">
           <TopBar
             searchQuery={searchQuery}
-            onSearch={setSearchQuery}
+            onSearch={setSearchQuery} // Це оживляє твій інпут пошуку
             sidebarOpen={sidebarOpen}
             setSidebarOpen={setSidebarOpen}
           />
           
           <div className="content-area">
-            {/* Показуємо лоадер тільки якщо юзер залогінений і дані вантажаться */}
             {booksLoading && user ? (
               <div style={{ textAlign: 'center', padding: '100px' }}>
                 <i className="fas fa-spinner fa-spin fa-2x" style={{ color: 'var(--primary)' }}></i>
@@ -146,23 +145,23 @@ function InnerApp() {
         </main>
       </div>
 
-      {/* Модалка додавання книги */}
       {showAddModal && (
         <AddBookModal
           onClose={() => setShowAddModal(false)}
           onSave={async (data) => {
             try {
+              // Додаємо в базу
               await addBook(data);
               showToast('Книгу додано ✓');
               setShowAddModal(false);
             } catch (err) {
+              console.error(err);
               showToast('Помилка при додаванні');
             }
           }}
         />
       )}
 
-      {/* Система сповіщень (Toast) */}
       <div id="toast" className={toast ? 'show' : ''}>
         {toast}
       </div>

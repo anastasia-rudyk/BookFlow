@@ -4,51 +4,57 @@ import { useApp } from '../../context/AppContext';
 export default function TopBar({ searchQuery, onSearch }) {
   const { user, sidebarOpen, setSidebarOpen } = useApp();
 
-  // Логіка визначення імені з твого script.js
+  // Визначаємо ім'я: пріоритет на displayName, потім пошта, потім Гість
   const displayName = user?.displayName || user?.email?.split('@')[0] || 'Гість';
+
+  // Генерація кольору для аватарки (щоб не було помилки, якщо displayName раптом пустий)
+  const charCode = displayName.charCodeAt(0) || 0;
+  const avatarStyle = {
+    background: `linear-gradient(135deg, 
+      hsl(${(charCode * 15) % 360}, 65%, 55%), 
+      hsl(${(charCode * 15 + 40) % 360}, 65%, 65%))`
+  };
 
   return (
     <header className="top-bar">
-      {/* Кнопка бургер-меню (мобільна) */}
+      {/* Кнопка бургер-меню для мобільних пристроїв */}
       <button
-        className="mobile-menu-btn"
+        className={`mobile-menu-btn ${sidebarOpen ? 'active' : ''}`}
         onClick={() => setSidebarOpen(!sidebarOpen)}
-        aria-controls="sidebar"
-        aria-expanded={sidebarOpen}
-        aria-label="Відкрити меню"
+        aria-label={sidebarOpen ? "Закрити меню" : "Відкрити меню"}
         type="button"
       >
-        <i className={`fas ${sidebarOpen ? 'fa-xmark' : 'fa-bars'}`} aria-hidden="true" />
+        <i className={`fas ${sidebarOpen ? 'fa-times' : 'fa-bars'}`} aria-hidden="true" />
       </button>
 
-      {/* Пошук */}
-      <label className="search-container" htmlFor="search-input">
+      {/* Контейнер пошуку */}
+      <div className="search-container">
         <i className="fas fa-search" aria-hidden="true" />
-        <span className="visually-hidden">Пошук книги або автора</span>
         <input
-          type="search"
+          type="text" 
           id="search-input"
           placeholder="Знайти книгу чи автора..."
-          value={searchQuery}
-          onChange={e => onSearch(e.target.value)}
+          value={searchQuery || ''} 
+          onChange={(e) => onSearch(e.target.value)}
           autoComplete="off"
         />
-      </label>
+      </div>
 
-      {/* Інформація про користувача */}
-      <div className="user-info" aria-label="Поточний користувач">
+      {/* Профіль користувача */}
+      <div className="user-info">
         <div className="user-text-details">
-          <p className="user-label">Користувач</p>
-          <h4>{displayName}</h4>
+          <span className="user-label">Користувач</span>
+          <h4 title={displayName}>{displayName}</h4>
         </div>
-        {/* Аватарка з градієнтом, згенерована на основі імені (як у твоєму коді) */}
+        
+        {/* Аватарка з літерним індексом або просто градієнтом */}
         <div
           className="avatar"
           aria-hidden="true"
-          style={{
-            background: `linear-gradient(135deg, hsl(${(displayName.charCodeAt(0) * 15) % 360},60%,55%), hsl(${(displayName.charCodeAt(0) * 15 + 40) % 360},60%,65%))`
-          }}
-        />
+          style={avatarStyle}
+        >
+          {displayName.charAt(0).toUpperCase()}
+        </div>
       </div>
     </header>
   );

@@ -51,10 +51,22 @@ export default function Sidebar() {
         </div>
 
         <div className="sidebar-tools">
-          <button className="logout-btn" onClick={logout}>
-            <i className="fas fa-right-from-bracket" /> Вийти
-          </button>
-        </div>
+  {/* ПЕРЕМИКАЧ ТЕМИ (Theme Toggle) */}
+  <button 
+    className="tool-btn theme-toggle" 
+    onClick={() => setDarkMode(!darkMode)}
+    title={darkMode ? "Увімкнути світлу тему" : "Увімкнути темну тему"}
+  >
+    <i className={`fas ${darkMode ? 'fa-sun' : 'fa-moon'}`}></i>
+    <span>{darkMode ? 'Світла тема' : 'Темна тема'}</span>
+  </button>
+
+  {/* КНОПКА ВИХОДУ */}
+  <button className="logout-btn" onClick={logout}>
+    <i className="fas fa-right-from-bracket" /> 
+    <span>Вийти</span>
+  </button>
+</div>
       </aside>
     </>
   );
