@@ -1,68 +1,101 @@
 import { useState, useEffect } from 'react';
-
-const API_URL = import.meta.env.VITE_API_URL || '/api/books';
+import { db } from '../firebase'; // Імпортуємо твій конфиг
+import { 
+  collection, 
+  query, 
+  where, 
+  onSnapshot, 
+  addDoc, 
+  updateDoc, 
+  deleteDoc, 
+  doc, 
+  serverTimestamp 
+} from 'firebase/firestore';
 
 export function useBooks(userId) {
-  const [books, setBooks]     = useState([]);
+  const [books, setBooks] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  const fetchBooks = async () => {
+  // 1. Отримання даних в реальному часі
+  useEffect(() => {
+    // Якщо юзер не залогінився — нічого не вантажимо
     if (!userId || userId === 'guest_mode') {
       setBooks([]);
       setLoading(false);
       return;
     }
-    try {
-      const res = await fetch(`${API_URL}/${userId}`);
-      if (!res.ok) throw new Error('Сервер не відповідає');
-      const data = await res.json();
+
+    setLoading(true);
+
+    // Створюємо запит: колекція 'books', де userId збігається
+    const q = query(
+      collection(db, 'books'),
+      where('userId', '==', userId)
+    );
+
+    // onSnapshot сам оновлює стейт, коли щось змінюється в базі
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const data = snapshot.docs.map(d => ({
+        id: d.id,
+        ...d.data()
+      }));
       setBooks(data);
-    } catch (e) {
-      console.error("Помилка зв'язку з бекендом:", e);
-    } finally {
       setLoading(false);
-    }
-  };
+    }, (error) => {
+      console.error("Помилка Firestore:", error);
+      setLoading(false);
+    });
 
-  useEffect(() => { fetchBooks(); }, [userId]);
+    return () => unsubscribe(); // Відписуємось при виході
+  }, [userId]);
 
+  // 2. Додавання книги
   const addBook = async (data) => {
     if (!userId || userId === 'guest_mode') {
-      throw new Error('Потрібна авторизація для додавання книг');
+      throw new Error('Потрібна авторизація');
     }
-    const res = await fetch(API_URL, {
-      method:  'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify({ ...data, userId }),
-    });
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({}));
-      throw new Error(err.error || 'Помилка сервера при додаванні книги');
+    
+    try {
+      await addDoc(collection(db, 'books'), {
+        ...data,
+        userId,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp()
+      });
+    } catch (e) {
+      console.error("Error adding doc:", e);
+      throw e;
     }
-    await fetchBooks();
   };
 
+  // 3. Видалення книги
   const deleteBook = async (id) => {
-    const res = await fetch(`${API_URL}/${id}`, { method: 'DELETE' });
-    if (!res.ok) throw new Error('Помилка при видаленні книги');
-    await fetchBooks();
+    try {
+      await deleteDoc(doc(db, 'books', id));
+    } catch (e) {
+      console.error("Error deleting doc:", e);
+    }
   };
 
+  // 4. Оновлення книги
   const updateBook = async (id, data) => {
-    const res = await fetch(`${API_URL}/${id}`, {
-      method:  'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify(data),
-    });
-    if (!res.ok) throw new Error('Помилка при оновленні книги');
-    await fetchBooks();
+    try {
+      const bookRef = doc(db, 'books', id);
+      await updateDoc(bookRef, {
+        ...data,
+        updatedAt: serverTimestamp()
+      });
+    } catch (e) {
+      console.error("Error updating doc:", e);
+    }
   };
 
+  // 5. Статистика (залишаємо як була)
   const stats = {
-    total:     books.length,
-    reading:   books.filter(b => b.status === 'reading').length,
+    total: books.length,
+    reading: books.filter(b => b.status === 'reading').length,
     completed: books.filter(b => b.status === 'completed').length,
-    pages:     books.reduce((acc, b) => acc + (Number(b.pagesRead) || 0), 0),
+    pages: books.reduce((acc, b) => acc + (Number(b.pagesRead) || 0), 0),
     avgRating: books.length > 0
       ? (books.reduce((acc, b) => acc + (Number(b.rating) || 0), 0) / books.length).toFixed(1)
       : 0,
